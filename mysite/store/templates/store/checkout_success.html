@@ -1,0 +1,11 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Thank You!</h1>
+        <p class="lead">Your order has been successfully placed.</p>
+        <hr class="my-4">
+        <p>You'll receive an email confirmation shortly.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'home' %}" role="button">Continue Shopping</a>
+    </div>
+{% endblock %}

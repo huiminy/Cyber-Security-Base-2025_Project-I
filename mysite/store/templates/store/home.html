@@ -1,0 +1,59 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <h1>Welcome to our store</h1>
+    
+    <form method="get" action="{% url 'home' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search products...">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+    
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    {% if product.image_url %}
+                        <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">${{ product.price }}</p>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p>No products found.</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-4">
+        <h4>Search Reviews</h4>
+        <input type="text" id="review-search" class="form-control" placeholder="Search reviews...">
+        <div id="review-results" class="mt-2"></div>
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+            $('#review-search').on('keyup', function() {
+                var query = $(this).val();
+                $.get('/search-reviews/?query=' + query, function(data) {
+                    var html = '';
+                    data.reviews.forEach(function(review) {
+                        html += '<div class="card mb-2"><div class="card-body">';
+                        html += '<p>' + review.comment + '</p>';
+                        html += '<p>Rating: ' + review.rating + '/5</p>';
+                        html += '</div></div>';
+                    });
+                    $('#review-results').html(html);
+                });
+            });
+        });
+    </script>
+{% endblock %}

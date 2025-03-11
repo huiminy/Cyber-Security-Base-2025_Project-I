@@ -1,0 +1,34 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <h1>Admin Panel</h1>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Quick Actions</h5>
+            <a href="{% url 'admin_command' %}" class="btn btn-warning">Run System Command</a>
+        </div>
+    </div>
+    <h2>Products</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>${{ product.price }}</td>
+                    <td>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-info">View</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <h1>Run System Command</h1>
+    <div class="alert alert-warning">
+        Use this with caution. This executes commands on the server.
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="command">Command:</label>
+            <input type="text" class="form-control" id="command" name="command" placeholder="Enter command">
+        </div>
+        <button type="submit" class="btn btn-primary">Execute</button>
+    </form>
+{% endblock %}
