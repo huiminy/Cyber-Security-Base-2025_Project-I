@@ -333,38 +333,38 @@ def download_receipt(request, order_id):
     return HttpResponse("Receipt not found", status=404)
 
 ## Vulnerable code - A03:2021-Injection
-# def search_reviews(request):
-#     query = request.GET.get('query', '')
-#     raw_sql = f"SELECT * FROM store_review WHERE comment LIKE '%{query}%'"
-    
-#     with connection.cursor() as cursor:
-#         cursor.execute(raw_sql)
-#         results = cursor.fetchall()
-    
-#     reviews = []
-#     for row in results:
-#         reviews.append({
-#             'id': row[0],
-#             'comment': row[3],
-#             'rating': row[4],
-#         })
-    
-#     return JsonResponse({'reviews': reviews})
-
-
-## Fixed version - A03:2021-Injection
 def search_reviews(request):
     query = request.GET.get('query', '')
+    raw_sql = f"SELECT * FROM store_review WHERE comment LIKE '%{query}%'"
     
-    # Using Django ORM instead of raw SQL
-    results = Review.objects.filter(comment__icontains=query)
+    with connection.cursor() as cursor:
+        cursor.execute(raw_sql)
+        results = cursor.fetchall()
     
     reviews = []
-    for review in results:
+    for row in results:
         reviews.append({
-            'id': review.id,
-            'comment': review.comment,
-            'rating': review.rating,
+            'id': row[0],
+            'comment': row[3],
+            'rating': row[4],
         })
     
     return JsonResponse({'reviews': reviews})
+
+
+## Fixed version - A03:2021-Injection
+# def search_reviews(request):
+#     query = request.GET.get('query', '')
+    
+#     # Using Django ORM instead of raw SQL
+#     results = Review.objects.filter(comment__icontains=query)
+    
+#     reviews = []
+#     for review in results:
+#         reviews.append({
+#             'id': review.id,
+#             'comment': review.comment,
+#             'rating': review.rating,
+#         })
+    
+#     return JsonResponse({'reviews': reviews})
