@@ -20,4 +20,5 @@ urlpatterns = [
     path('download-receipt/<int:order_id>/', views.download_receipt, name='download_receipt'),
     path('search-reviews/', views.search_reviews, name='search_reviews'),
     path('clear-session/', views.clear_session, name='clear_session'),
+    path('lockout/', views.lockout, name='lockout'),
 ]

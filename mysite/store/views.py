@@ -145,74 +145,31 @@ def clear_session(request):
         del request.session['failed_attempts']
     return redirect('login')
 
+def lockout(request):
+    return render(request, 'store/lockout.html')
+
 ## Vulnerable codes - A07:2021-Identification and Authentication Failures
-@csrf_exempt
-def user_register(request):
-  if request.method == 'POST':
-    form = UserRegisterForm(request.POST)
-    if form.is_valid():
-      user = form.save()
-      security_answer = form.cleaned_data.get('security_answer')
-
-      profile = UserProfile.objects.create(user=user, security_answer = security_answer)
-      profile.security_answer = security_answer 
-      profile.save()
-       
-      login(request, user)
-
-      return redirect('login')
-  else:
-    form = UserRegisterForm()
-
-  return render(request, 'store/register.html', {'form': form})
-
-@csrf_exempt
-def user_login(request):
-    failed_attempts = request.session.get('failed_attempts', 0)
-
-    if request.method == 'POST':
-        form = UserLoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(username=username, password=password)
-            if user:
-                request.session['failed_attempts'] = 0
-                login(request, user)
-                return redirect('home')
-            else:
-                failed_attempts += 1
-                request.session['failed_attempts'] = failed_attempts
-                messages.error(request, 'Invalid login credentials.')
-        else:
-            messages.error(request, 'Invalid form data.')
-    else:
-        form = UserLoginForm()
-
-    return render(request, 'store/login.html', {'form': form, 'failed_attempts': failed_attempts})
-
-## Fixed version - A07:2021-Identification and Authentication Failures
+# @csrf_exempt
 # def user_register(request):
-#     if request.method == 'POST':
-#         form = UserRegisterForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             security_answer = form.cleaned_data.get('security_answer')
-            
-#             profile = UserProfile.objects.create(user=user)
-#             profile.security_answer_hash = make_password(security_answer)
-#             profile.save()
-            
-#             login(request, user)
+#   if request.method == 'POST':
+#     form = UserRegisterForm(request.POST)
+#     if form.is_valid():
+#       user = form.save()
+#       security_answer = form.cleaned_data.get('security_answer')
 
-#             messages.success(request, 'Account created! Please check your email to verify your account.')
+#       profile = UserProfile.objects.create(user=user, security_answer = security_answer)
+#       profile.security_answer = security_answer 
+#       profile.save()
+       
+#       login(request, user)
 
-#             return redirect('login')
-#     else:
-#         form = UserRegisterForm()
-    
-#     return render(request, 'store/register.html', {'form': form})
+#       return redirect('login')
+#   else:
+#     form = UserRegisterForm()
 
+#   return render(request, 'store/register.html', {'form': form})
+
+# @csrf_exempt
 # def user_login(request):
 #     failed_attempts = request.session.get('failed_attempts', 0)
 
@@ -222,33 +179,83 @@ def user_login(request):
 #             username = form.cleaned_data['username']
 #             password = form.cleaned_data['password']
 #             user = authenticate(username=username, password=password)
-
-#             if user is not None:
-#                 if user.is_active:
-#                     if is_suspicious_login(request, user):
-#                         messages.warning(request, "Suspicious login detected. Additional verification required.")
-#                         return redirect('verification')
-
-#                     login(request, user)
-#                     request.session['failed_attempts'] = 0
-#                     return redirect('home')
-#                 else:
-#                     messages.error(request, 'Account is disabled.')
+#             if user:
+#                 request.session['failed_attempts'] = 0
+#                 login(request, user)
+#                 return redirect('home')
 #             else:
 #                 failed_attempts += 1
 #                 request.session['failed_attempts'] = failed_attempts
 #                 messages.error(request, 'Invalid login credentials.')
-
-#                 if failed_attempts >= 5:
-#                     messages.error(request, 'Account temporarily locked due to too many failed attempts.')
-#                     return redirect('lockout')
-
 #         else:
-#             messages.error(request, 'Invalid form submission.')
+#             messages.error(request, 'Invalid form data.')
 #     else:
 #         form = UserLoginForm()
 
 #     return render(request, 'store/login.html', {'form': form, 'failed_attempts': failed_attempts})
+
+## Fixed version - A07:2021-Identification and Authentication Failures
+def user_register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            security_answer = form.cleaned_data.get('security_answer')
+            
+            profile = UserProfile.objects.create(user=user)
+            profile.security_answer_hash = make_password(security_answer)
+            profile.save()
+            
+            login(request, user)
+
+            messages.success(request, 'Account created! Please check your email to verify your account.')
+
+            return redirect('login')
+    else:
+        form = UserRegisterForm()
+    
+    return render(request, 'store/register.html', {'form': form})
+
+def user_login(request):
+    if request.method == 'GET' and 'failed_attempts' in request.session:
+        request.session['failed_attempts'] = 0
+        return render(request, 'store/login.html', {'form': UserLoginForm()})
+
+    failed_attempts = request.session.get('failed_attempts', 0)
+
+    if request.method == 'POST':
+        form = UserLoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                if user.is_active:
+                    if is_suspicious_login(request, user):
+                        messages.warning(request, "Suspicious login detected. Additional verification required.")
+                        return redirect('verification')
+
+                    login(request, user)
+                    request.session['failed_attempts'] = 0
+                    return redirect('home')
+                else:
+                    messages.error(request, 'Account is disabled.')
+            else:
+                failed_attempts += 1
+                request.session['failed_attempts'] = failed_attempts
+                messages.error(request, 'Invalid login credentials.')
+
+                if failed_attempts >= 5:
+                    messages.error(request, 'Account temporarily locked due to too many failed attempts.')
+                    return redirect('lockout')
+
+        else:
+            messages.error(request, 'Invalid form submission.')
+    else:
+        form = UserLoginForm()
+
+    return render(request, 'store/login.html', {'form': form, 'failed_attempts': failed_attempts})
 
 def user_logout(request):
     logout(request)
