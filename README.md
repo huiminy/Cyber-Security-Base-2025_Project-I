@@ -138,7 +138,7 @@ The application has multiple identification and authentication weaknesses:
 - No rate limiting for login attempts
 - No email verification for new accounts
 - No password complexity requirements (in settings.py)
-- No protection against username enumeration
+- Generic error messages to protect against username enumeration has been implemented.
 - No logging of login activities
 - No secure handling of session cookies
 
@@ -149,10 +149,8 @@ _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/
 
 The fix involves implementing several security measures:
 - CSRF protection (by removing the @csrf_exempt decorator)
-- Rate limiting for login attempts
+- Basic rate limiting is implemented through failed_attempts in session and is_suspicious_login to redirect to verification
 - Generic error messages to prevent username enumeration
-- Logging of login activities
-- Secure handling of redirects
 - Additional checks for suspicious login attempts
 
 Together with the password validation settings fixed in Flaw 3, these changes significantly improve the authentication security of the application.
