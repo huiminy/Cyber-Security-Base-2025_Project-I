@@ -59,10 +59,10 @@ _Ensure that you have python installed in your device before continuing_
 ## **FLAW 1: A03:2021-Injection**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L335_
 
-### **Description: **
+### **Description:**
 The application contains an SQL injection vulnerability in the `search_reviews` function. The function takes user input and directly incorporates it into a raw SQL query without any sanitization. This vulnerability allows an attacker to manipulate the SQL query by injecting malicious code. For example, if an attacker inputs something like `' OR '1'='1`, this would return all reviews in the database, bypassing the intended filtering. 
 
-### **Solution: **
+### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L355_
 
 The fix involves using parameterized queries or an ORM (Object-Relational Mapping) instead of direct string concatenation. Django's ORM already provides a secure way to perform queries with user input.By using Django's ORM method filter(comment__icontains=query), the query parameter is automatically sanitized and properly escaped before being used in the SQL query, preventing SQL injection attacks.
@@ -71,10 +71,10 @@ The fix involves using parameterized queries or an ORM (Object-Relational Mappin
 ## **FLAW 2: A01:2021-Broken Access Control**
 https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L239
 
-### **Description: **
+### **Description:**
 The application has a broken access control vulnerability in the `api_product_info` function. While the `admin_panel` view correctly checks if a user is a superuser before granting access, the API endpoint for product information has no authentication or authorization checks. This means that any user, authenticated or not, can access product data through the API. If there are products that should be accessible only to certain users (like admins or premium users), this endpoint would expose that data to everyone.
 
-### **Solution: **
+### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L254_
 
 The fix involves adding proper authentication and authorization checks to the API endpoint. By adding the @login_required decorator, we ensure that only authenticated users can access the endpoint. Additionally, we've added a check to verify that the user has appropriate permissions to view the product.
@@ -83,7 +83,7 @@ The fix involves adding proper authentication and authorization checks to the AP
 ## **FLAW 3: A05:2021-Security Misconfiguration**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/mysite/settings.py#L23_
 
-### **Description: **
+### **Description:**
 The application has several security misconfigurations in its Django settings:
 - Debug mode is enabled in production
 - Secret key is hardcoded in the settings file
@@ -100,7 +100,7 @@ These misconfigurations expose the application to various security risks:
 - Disabled CSRF protection enables cross-site request forgery
 - Disabled clickjacking protection allows the application to be embedded in malicious frames
 
-### **Solution: **
+### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/mysite/settings.py#L130_
 
 The fix involves properly configuring Django's security settings, which ensure that:
@@ -119,7 +119,7 @@ _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/
 ### **Description:**
 The application contains a command injection vulnerability in the `admin_command` function. While it does check if the user is a superuser, it directly executes any command provided by the user without sanitization. The use of `shell=True` is particularly dangerous as it allows command chaining through shell operators like `;`, `&&`, or `|`. An attacker with admin access could execute arbitrary commands on the server, potentially leading to full system compromise.
 
-### **Solution: **
+### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L287_
 
 The fix involves using a whitelist of allowed commands rather than executing arbitrary user input. This approach offers several security improvements:
@@ -144,7 +144,7 @@ The application has multiple identification and authentication weaknesses:
 
 These issues make it easier for attackers to brute-force passwords, enumerate valid usernames, perform CSRF attacks, and hijack sessions.
 
-### **Solution: **
+### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L110_
 
 The fix involves implementing several security measures:
