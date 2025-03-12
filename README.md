@@ -61,24 +61,24 @@ _Ensure that you have python installed in your device before continuing_
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L426_
 
 ### **Description:**
-The application contains an SQL injection vulnerability in the `search_reviews` function. The function takes user input and directly incorporates it into a raw SQL query without any sanitization. This vulnerability allows an attacker to manipulate the SQL query by injecting malicious code. For example, if an attacker inputs something like `' OR '1'='1`, this would return all reviews in the database, bypassing the intended filtering. 
+The application contains an SQL injection vulnerability in the `search_reviews` function. The function takes user input and directly incorporates it into a raw SQL query without any sanitisation. This vulnerability allows an attacker to manipulate the SQL query by injecting malicious code. For example, if an attacker inputs something like `' OR '1'='1`, this would return all reviews in the database - hence bypassing the intended filtering. 
 
 ### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L446_
 
-The fix involves using parameterized queries or an ORM (Object-Relational Mapping) instead of direct string concatenation. Django's ORM already provides a secure way to perform queries with user input.By using Django's ORM method filter(comment__icontains=query), the query parameter is automatically sanitized and properly escaped before being used in the SQL query, preventing SQL injection attacks.
+The fix involves using parameterised queries or an ORM (Object-Relational Mapping) instead of direct string concatenation. Django's ORM already provides a secure way to perform queries with user input. By using Django's ORM method filter(comment__icontains=query), the query parameter is automatically sanitised and properly escaped before being used in the SQL query, thus preventing SQL injection attacks.
 
 
 ## **FLAW 2: A01:2021-Broken Access Control**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L330_
 
 ### **Description:**
-The application has a broken access control vulnerability in the `api_product_info` function. While the `admin_panel` view correctly checks if a user is a superuser before granting access, the API endpoint for product information has no authentication or authorization checks. This means that any user, authenticated or not, can access product data through the API. If there are products that should be accessible only to certain users (like admins or premium users), this endpoint would expose that data to everyone.
+The application has a broken access control vulnerability in the `api_product_info` function. While the `admin_panel` view correctly checks if a user is a superuser before granting access, the API endpoint for product information has no authentication or authorization checks. This means that any user - whether they are authenticated or not, can access product data through the API. If there are products that should be accessible only to certain users (like superusers), this endpoint would expose that data to everyone.
 
 ### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L345_
 
-The fix involves adding proper authentication and authorization checks to the API endpoint. By adding the @login_required decorator, we ensure that only authenticated users can access the endpoint. Additionally, we've added a check to verify that the user has appropriate permissions to view the product.
+The fix involves adding proper authentication and authorisation checks to the API endpoint. By adding the @login_required decorator, I have ensured that only authenticated users can access the endpoint. Additionally, I've added a check to verify that the user has appropriate permissions to view the product.
 
 
 ## **FLAW 3: A05:2021-Security Misconfiguration**
@@ -118,7 +118,7 @@ The fix involves properly configuring Django's security settings, which ensure t
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L365_
 
 ### **Description:**
-The application contains a command injection vulnerability in the `admin_command` function. While it does check if the user is a superuser, it directly executes any command provided by the user without sanitization. The use of `shell=True` is particularly dangerous as it allows command chaining through shell operators like `;`, `&&`, or `|`. An attacker with admin access could execute arbitrary commands on the server, potentially leading to full system compromise.
+The application contains a command injection vulnerability in the `admin_command` function. While it does check if the user is a superuser, it directly executes any command provided by the user without sanitisation. The use of `shell=True` is quite dangerous as it allows command chaining through shell operators like `;`, `&&`, or `|`. An attacker with the superuser access could execute arbitrary commands on the server, potentially leading to full system compromise.
 
 ### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L378_
@@ -154,17 +154,13 @@ The fix involves implementing several security measures:
 - Generic error messages to prevent username enumeration
 - Additional checks for suspicious login attempts
 
-Together with the password validation settings fixed in Flaw 3, these changes significantly improve the authentication security of the application.
 
 ## **FLAW 6: A02:2021-Cryptographic Failures**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L48_
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/models.py#L33_
 
 ### **Description:**
-
-The application has a cryptographic failure in the reset password functionality. Specifically, it stores security answers in plaintext in the database, and it sets new passwords by directly updating the database record with the plaintext password. This allows anyone with access to the database to view users' security answers and reset their passwords without knowing their old password. The `reset_password` function is also vulnerable to SQL injection via string interpolation.
-
-The application exhibits a cryptographic failure related to the handling of security answers during password resets. While user passwords themselves are stored using a proper hashing algorithm, the security answers used for password recovery were initially stored in plaintext within the `UserProfile` model. As demonstrated by the "flaw-6-before-1.png" screenshot, the `/debug-security/` endpoint exposed these plaintext security answers, allowing anyone with administrative privileges or direct database access to view this sensitive information. Additionally, the vulnerable `reset_password` function directly updated the database with a new password _without_ hashing it, which would be  set to an empty string or any value without hashing.
+The application exhibits a cryptographic failure related to the handling of security answers during password resets. While user passwords themselves are stored using a proper hashing algorithm, the security answers used for password recovery were initially stored in plaintext within the `UserProfile` model. As demonstrated by the "flaw-6-before-1.png" screenshot, the `/debug-security/` endpoint exposed these plaintext security answers, allowing anyone with administrative privileges or direct database access to view this sensitive information. Additionally, the vulnerable `reset_password` function directly updated the database with a new password _without_ hashing it - which would be set to an empty string or any value without hashing.
 
 ### **Solution:**
 _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/store/views.py#L71_
@@ -172,9 +168,9 @@ _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/blob/main/mysite/
 
 The implemented fix addresses these vulnerabilities through the following measures:
 
--   Secure Storage of Security Answers: The application now stores the *hash* of the security answer rather than the plaintext value. The `security_answer_hash` field in the `UserProfile` model stores the result of hashing the security answer using Django's `make_password()` function during user registration. The original plaintext `security_answer` field is then cleared to prevent its storage.
--   Password Handling with `set_password()`: The `reset_password` function now utilizes Django's built-in `set_password()` method to securely set new passwords, ensuring that they are properly salted and hashed before being stored in the database.
--   Mitigation of Timing Attacks: To increase security of the reset code, the code adds protection against timing attacks with random delays
+-   Secure Storage of Security Answers: The application now stores the _hash_ of the security answer rather than the plaintext value. The `security_answer_hash` field in the `UserProfile` model stores the result of hashing the security answer using Django's `make_password()` function during user registration. The original plaintext `security_answer` field is then cleared to prevent its storage.
+-   Password Handling with `set_password()`: The `reset_password` function now utilizes Django's built-in `set_password()` method to securely set new passwords - ensuring that they are properly hashed before being stored in the database.
+-   Mitigation of Timing Attacks: To increase security of the reset code, this code has included protection against timing attacks with random delays
 -   Username Enumeration Protection: Adds consistent error messages to protect against username enumeration.
 
 The effectiveness of these solutions is confirmed by inspecting the `/debug-security/` endpoint _after_ the fixes are applied. 
