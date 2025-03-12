@@ -3,6 +3,8 @@ from . import views
 from django.contrib import admin
 
 urlpatterns = [
+    path('reset-password/', views.reset_password, name='reset_password'),
+    path('debug-security/', views.debug_security_info, name='debug_security'),
     path('', views.home, name='home'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('register/', views.user_register, name='register'),

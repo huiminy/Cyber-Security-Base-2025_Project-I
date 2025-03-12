@@ -7,6 +7,7 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Login</button>
     </form>
-    <p>Failed login attempts: {{ failed_attempts }}</p>  <!-- Added this line -->
+    <p>Failed login attempts: {{ failed_attempts }}</p> 
     <p>Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+    <p>Forgot your password? <a href="{% url 'reset_password' %}">Reset Password</a></p>
 {% endblock %}

@@ -30,3 +30,12 @@ class OrderForm(forms.Form):
         ('credit', 'Credit Card'),
         ('paypal', 'PayPal'),
     ])
+
+class UserRegisterForm(UserCreationForm):
+    email = forms.EmailField()
+    security_answer = forms.CharField(max_length=100, required=True, 
+                                     label="Security Answer (What is your mother's maiden name?)")
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2', 'security_answer']

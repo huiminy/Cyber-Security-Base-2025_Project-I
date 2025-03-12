@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
@@ -25,6 +27,19 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=15, blank=True)
     credit_card = models.CharField(max_length=16, blank=True)
+    bio = models.TextField(blank=True)
+
+    security_question = models.CharField(max_length=200, default="What is your mother's maiden name?")
+    security_answer = models.CharField(max_length=100, blank=True) 
+
+    ## Fixed version
+    # security_answer_hash = models.CharField(max_length=128, blank=True)  
+
+    # def save(self, *args, **kwargs):
+    #     if self.security_answer:
+    #         self.security_answer_hash = make_password(self.security_answer)
+    #         self.security_answer = ''  
+    #     super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.user.username}'s profile"

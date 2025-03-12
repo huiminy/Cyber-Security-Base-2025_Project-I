@@ -9,14 +9,92 @@ import os
 import subprocess
 import logging
 import datetime
+import random
+import time
 
 from .models import Product, Review, UserProfile, Order, OrderItem
 from .forms import UserRegisterForm, UserLoginForm, ReviewForm, OrderForm, UserProfileForm
 from django.db import connection
 from .models import Review
 from django.contrib import messages 
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 
 logger = logging.getLogger(__name__)
+
+def debug_security_info(request):
+    if not request.user.is_superuser:
+        return HttpResponse("Access denied")
+    
+    html = "<h1>Security Vulnerability Demo</h1><table border='1'>"
+    html += "<tr><th>Username</th><th>Security Answer (Plaintext)</th><th>Password (As Stored)</th></tr>"
+    
+    users = User.objects.all()
+    for user in users:
+        try:
+            profile = UserProfile.objects.get(user=user)
+            security_answer = profile.security_answer
+        except:
+            security_answer = "N/A"
+            
+        html += f"<tr><td>{user.username}</td><td>{security_answer}</td><td>{user.password}</td></tr>"
+    
+    html += "</table>"
+    html += "<p>This demonstrates A02:2021-Cryptographic Failures - Passwords and security answers stored insecurely</p>"
+    return HttpResponse(html)
+
+## Vulnerable code - A02:2021-Cryptographic Failures
+def reset_password(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        new_password = request.POST.get('new_password')
+        security_answer = request.POST.get('security_answer')
+        
+        try:
+            user = User.objects.get(username=username)
+            user_profile = UserProfile.objects.get(user=user)
+            
+            if user_profile.security_answer == security_answer:
+                with connection.cursor() as cursor:
+                    cursor.execute(f"UPDATE auth_user SET password = '{new_password}' WHERE username = '{username}'")
+                
+                messages.success(request, 'Password has been reset successfully!')
+                return redirect('login')
+            else:
+                messages.error(request, 'Incorrect security answer.')
+        except (User.DoesNotExist, UserProfile.DoesNotExist):
+            messages.error(request, 'User not found.')
+        
+    return render(request, 'store/reset_password.html')
+
+## Fixed version - A02:2021-Cryptographic Failures
+# def reset_password(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         new_password = request.POST.get('new_password')
+#         security_answer = request.POST.get('security_answer')
+
+#         try:
+#             user = User.objects.get(username=username)
+#             user_profile = UserProfile.objects.get(user=user)
+
+#             if check_password(security_answer, user_profile.security_answer_hash):
+#                 user.set_password(new_password)
+#                 user.save()
+
+#                 logger.info(f"Password reset for user {username} from IP {request.META.get('REMOTE_ADDR')}")
+
+#                 messages.success(request, 'Password has been reset successfully!')
+#                 return redirect('login')
+#             else:
+#                 time.sleep(random.uniform(0.5, 1.5))
+#                 messages.error(request, 'Incorrect security answer.')
+#         except (User.DoesNotExist, UserProfile.DoesNotExist):
+#             messages.error(request, 'Incorrect security answer.')
+
+#     return render(request, 'store/reset_password.html')
+
 
 def home(request):
     products = Product.objects.all()
@@ -70,17 +148,23 @@ def clear_session(request):
 ## Vulnerable codes - A07:2021-Identification and Authentication Failures
 @csrf_exempt
 def user_register(request):
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            UserProfile.objects.create(user=user)
-            login(request, user)
-            return redirect('home')
-    else:
-        form = UserRegisterForm()
-    
-    return render(request, 'store/register.html', {'form': form})
+  if request.method == 'POST':
+    form = UserRegisterForm(request.POST)
+    if form.is_valid():
+      user = form.save()
+      security_answer = form.cleaned_data.get('security_answer')
+
+      profile = UserProfile.objects.create(user=user, security_answer = security_answer)
+      profile.security_answer = security_answer 
+      profile.save()
+       
+      login(request, user)
+
+      return redirect('login')
+  else:
+    form = UserRegisterForm()
+
+  return render(request, 'store/register.html', {'form': form})
 
 @csrf_exempt
 def user_login(request):
@@ -113,9 +197,16 @@ def user_login(request):
 #         form = UserRegisterForm(request.POST)
 #         if form.is_valid():
 #             user = form.save()
-#             UserProfile.objects.create(user=user)
+#             security_answer = form.cleaned_data.get('security_answer')
             
+#             profile = UserProfile.objects.create(user=user)
+#             profile.security_answer_hash = make_password(security_answer)
+#             profile.save()
+            
+#             login(request, user)
+
 #             messages.success(request, 'Account created! Please check your email to verify your account.')
+
 #             return redirect('login')
 #     else:
 #         form = UserRegisterForm()
