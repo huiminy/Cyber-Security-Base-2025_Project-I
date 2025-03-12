@@ -11,6 +11,7 @@ LINK: _https://github.com/huiminy/Cyber-Security-Base-2025_Project-I.git_
     - A05:2021-Security Misconfiguration
     - A07:2021-Identification and Authentication Failures
     - A02:2021-Cryptographic Failures
+- Screenshots are all in `/screenshots` (https://github.com/huiminy/Cyber-Security-Base-2025_Project-I/tree/main/screenshots)
    
 - Two (2) sample products and their reviews have been added to the database already - but if more reviews/products are needed, please follow the instructions in step number seven (7)
   
